@@ -5,9 +5,8 @@ def create_app():
     """Application factory for SupportHub"""
     app = Flask(__name__)
 
-    # Temporary minimal route
-    @app.route("/health")
-    def health():
-        return {"status": "OK"}
+    # register blueprints
+    from app.tickets.routes import tickets_bp
+    app.register_blueprint(tickets_bp, url_prefix="/tickets")
 
     return app
