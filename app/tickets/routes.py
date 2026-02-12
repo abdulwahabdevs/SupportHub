@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, g, jsonify
 from .services import create_ticket
 
 
@@ -7,8 +7,9 @@ tickets_bp = Blueprint("tickets", __name__)
 
 @tickets_bp.route("/", methods=["POST"])
 def create():
-    # fake user for now
-    user = {"id": 1, "role": "customer"}
+    # AUTHORIZATION (not authentication)
+    if g.user["role"] != "customer":
+        return jsonify({"error": "Forbidden"}), 403
 
     data = request.get_json(silent=True)
 
@@ -23,6 +24,6 @@ def create():
     if len(question) > 500:
         return jsonify({"error": "Question too long"}), 400
 
-    ticket = create_ticket(data, user)
+    ticket = create_ticket(data, g.user)
 
     return jsonify(ticket), 201
