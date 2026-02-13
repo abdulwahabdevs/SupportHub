@@ -1,5 +1,6 @@
 from flask import Blueprint, request, g, jsonify
 from .services import create_ticket
+from .store import tickets
 
 
 tickets_bp = Blueprint("tickets", __name__)
@@ -27,3 +28,18 @@ def create():
     ticket = create_ticket(data, g.user)
 
     return jsonify(ticket), 201
+
+
+@tickets_bp.route("/<int:ticket_id>", methods=["GET"])
+def get_ticket(ticket_id):
+    ticket = tickets.get(ticket_id)
+
+    if not ticket:
+        return jsonify({"error": "Not found"}), 404
+
+    user = g.user
+
+    if user["role"] == "customer" and ticket["owner_id"] != user["id"]:
+        return jsonify({"error": "Forbidden"}), 403
+
+    return jsonify(ticket)
